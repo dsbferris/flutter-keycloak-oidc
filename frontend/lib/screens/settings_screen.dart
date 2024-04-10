@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:example/provider/shared_preferences_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:example/provider/theme_mode_provider.dart';
 
 @RoutePage()
 class SettingsScreen extends ConsumerWidget {
@@ -11,23 +11,29 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        leading: const AutoLeadingButton(),
+        // leading: const AutoLeadingButton(),
         title: const Text("Settings"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      body: const Padding(
+        padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            themeModeTile(context, ref),
-            aboutButton(context, ref),
+            ThemeModeTile(),
+            AboutButton(),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget themeModeTile(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeModeStateProvider);
+class ThemeModeTile extends ConsumerWidget {
+  const ThemeModeTile({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode =
+        ref.watch(sharedUtilProvider.select((value) => value.themeMode));
     //final themeMode = ref.watch(themeModeProvider);
     return ListTile(
       leading: const Icon(Icons.sunny),
@@ -49,15 +55,20 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ],
         onChanged: (value) {
-          if (value != null) {
-            ref.read(themeModeStateProvider.notifier).update(value);
+          if (value != null && value != themeMode) {
+            ref.read(sharedUtilProvider).setThemeMode(value);
           }
         },
       ),
     );
   }
+}
 
-  Widget aboutButton(BuildContext context, WidgetRef ref) {
+class AboutButton extends ConsumerWidget {
+  const AboutButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     return OutlinedButton.icon(
       icon: const Icon(Icons.info),
       label: const Text("About"),

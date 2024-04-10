@@ -21,5 +21,19 @@ final sharedPreferencesProvider = Provider<SharedPreferences>.internal(
 );
 
 typedef SharedPreferencesRef = ProviderRef<SharedPreferences>;
+String _$sharedUtilHash() => r'05f3fd1eb954874a8dba627af0cdd33b17134ea7';
+
+/// See also [sharedUtil].
+@ProviderFor(sharedUtil)
+final sharedUtilProvider = AutoDisposeProvider<SharedUtil>.internal(
+  sharedUtil,
+  name: r'sharedUtilProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$sharedUtilHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef SharedUtilRef = AutoDisposeProviderRef<SharedUtil>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
