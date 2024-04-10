@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"github.com/dsbferris/flutter-keycloak-oidc/server"
+)
 
 func main() {
-	fmt.Println("Hello world!")
+	s := server.NewServer(8080)
+	s.Start()
 }
