@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'package:example/provider/shared_preferences_provider.dart';
+import 'package:example/provider/dio_provider.dart';
+import 'package:example/provider/shared_util_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
 
 import 'package:flutter/foundation.dart';
 import 'package:oidc/oidc.dart';
@@ -14,7 +14,6 @@ import 'package:example/logger.dart';
 part 'oidc_provider.g.dart';
 
 Future<OidcUserManager> getOidcInstance(SharedPreferences preferences) async {
-  // TODO you need to adjust these values with yours
   final keycloakUri =
       Uri.parse('https://keycloak.ferris-s.de/realms/flutter-test/');
   const credentials = OidcClientAuthentication.none(
@@ -191,9 +190,10 @@ class AuthController extends _$AuthController {
     final logoutUri = Uri.parse(endpoint).replace(queryParameters: {
       "id_token_hint": manager.currentUser!.idToken,
     });
-    // final resp = await dio.getUri(logoutUri);
-    final resp = await http.get(logoutUri);
-    final body = resp.body;
+    final dio = ref.read(dioClientProvider);
+    // keycloak returns a html doc
+    final dioResp = await dio.getUri<String>(logoutUri);
+    final body = dioResp.data ?? "";
     if (!body.contains("You are logged out")) {
       throw Exception("logout did not work...");
     }

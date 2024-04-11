@@ -6,6 +6,10 @@ import 'package:example/provider/oidc_provider.dart';
 
 part 'dio_provider.g.dart';
 
+// It is better to have two Dio instances,
+// one for normal/un-authenticated request
+// and one for authenticated requests
+
 @riverpod
 Dio dioClient(DioClientRef ref) => Dio();
 

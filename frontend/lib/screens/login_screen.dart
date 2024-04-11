@@ -63,7 +63,7 @@ class LoginScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     UserLoginForm(shallPop),
-                    ElevatedButton(
+                    FilledButton(
                       onPressed: () async => await loginPopup(context, ref),
                       child: const Text("Login Browser Popup"),
                     ),
@@ -111,6 +111,13 @@ class _UserLoginFormState extends ConsumerState<UserLoginForm> {
   final passwordController = TextEditingController();
   bool usernameIsEmail = false;
 
+  @override
+  void dispose() {
+    userNameController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   Future<void> loginForm(BuildContext context, WidgetRef ref) async {
     await ref
         .read(authControllerProvider.notifier)
@@ -122,67 +129,70 @@ class _UserLoginFormState extends ConsumerState<UserLoginForm> {
 
   @override
   Widget build(BuildContext context) {
+    final contextColorScheme = Theme.of(context).colorScheme;
     return Container(
+      padding: const EdgeInsets.all(8.0),
+      margin: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         border: Border.all(color: Theme.of(context).colorScheme.error),
       ),
       child: Column(
         children: [
-          Column(
+          Text(
+            "Using the form is depracted. Please use Browser popup!",
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "Using the form is depracted. Please use Browser popup!",
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              const Text("username is email"),
+              const Gap(20),
+              Switch.adaptive(
+                value: usernameIsEmail,
+                onChanged: (_) {
+                  setState(() {
+                    usernameIsEmail = !usernameIsEmail;
+                  });
+                },
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("username is email"),
-                  const Gap(20),
-                  Switch.adaptive(
-                    value: usernameIsEmail,
-                    onChanged: (_) {
-                      setState(() {
-                        usernameIsEmail = !usernameIsEmail;
-                      });
-                    },
-                  ),
-                ],
-              ),
-              const Gap(4),
-              TextFormField(
-                controller: userNameController,
-                autocorrect: false,
-                autofillHints: const ["username"],
-                keyboardType: usernameIsEmail
-                    ? TextInputType.emailAddress
-                    : TextInputType.text,
-                decoration: InputDecoration(
-                  labelText: usernameIsEmail ? "email" : "username",
-                  hintText: usernameIsEmail ? "email" : "username",
-                ),
-                textInputAction: TextInputAction.next,
-              ),
-              TextFormField(
-                controller: passwordController,
-                autocorrect: false,
-                autofillHints: const ["password"],
-                keyboardType: TextInputType.visiblePassword,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: "password",
-                  hintText: "password",
-                ),
-                textInputAction: TextInputAction.done,
-              ),
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).disabledColor),
-                  onPressed: () async {
-                    await loginForm(context, ref);
-                  },
-                  child: const Text("Login with Form")),
             ],
+          ),
+          const Gap(4),
+          TextFormField(
+            controller: userNameController,
+            autocorrect: false,
+            autofillHints: const ["username"],
+            keyboardType: usernameIsEmail
+                ? TextInputType.emailAddress
+                : TextInputType.text,
+            decoration: InputDecoration(
+              labelText: usernameIsEmail ? "email" : "username",
+              hintText: usernameIsEmail ? "email" : "username",
+            ),
+            textInputAction: TextInputAction.next,
+          ),
+          TextFormField(
+            controller: passwordController,
+            autocorrect: false,
+            autofillHints: const ["password"],
+            keyboardType: TextInputType.visiblePassword,
+            obscureText: true,
+            decoration: const InputDecoration(
+              labelText: "password",
+              hintText: "password",
+            ),
+            textInputAction: TextInputAction.done,
+          ),
+          const Gap(4),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: contextColorScheme.errorContainer,
+              foregroundColor: contextColorScheme.onErrorContainer,
+            ),
+            onPressed: () async {
+              await loginForm(context, ref);
+            },
+            child: const Text("Login with Form"),
           ),
         ],
       ),

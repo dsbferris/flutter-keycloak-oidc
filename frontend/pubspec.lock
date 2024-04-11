@@ -321,22 +321,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
-  flex_color_scheme:
-    dependency: "direct main"
-    description:
-      name: flex_color_scheme
-      sha256: "32914024a4f404d90ff449f58d279191675b28e7c08824046baf06826e99d984"
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.3.1"
-  flex_seed_scheme:
-    dependency: transitive
-    description:
-      name: flex_seed_scheme
-      sha256: "4cee2f1d07259f77e8b36f4ec5f35499d19e74e17c7dce5b819554914082bc01"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.5.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -497,7 +481,7 @@ packages:
     source: hosted
     version: "0.15.4"
   http:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: http
       sha256: "761a297c042deedc1ffbb156d6e2af13886bb305c2a343a4d972504cd67dd938"
@@ -1221,6 +1205,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.1"
+  url_strategy:
+    dependency: "direct main"
+    description:
+      name: url_strategy
+      sha256: "42b68b42a9864c4d710401add17ad06e28f1c1d5500c93b98c431f6b0ea4ab87"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   uuid:
     dependency: transitive
     description:

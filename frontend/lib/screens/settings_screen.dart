@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:example/provider/shared_preferences_provider.dart';
+import 'package:example/provider/shared_util_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,14 +11,16 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        // leading: const AutoLeadingButton(),
         title: const Text("Settings"),
       ),
       body: const Padding(
         padding: EdgeInsets.all(20),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ThemeModeTile(),
+            Divider(),
             AboutButton(),
           ],
         ),
@@ -32,10 +34,9 @@ class ThemeModeTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode =
-        ref.watch(sharedUtilProvider.select((value) => value.themeMode));
-    //final themeMode = ref.watch(themeModeProvider);
+    final themeMode = ref.watch(myThemeModeProvider);
     return ListTile(
+      titleAlignment: ListTileTitleAlignment.center,
       leading: const Icon(Icons.sunny),
       title: const Text("Theme mode"),
       trailing: DropdownButton<ThemeMode>(
@@ -54,10 +55,8 @@ class ThemeModeTile extends ConsumerWidget {
             child: Text("Light"),
           ),
         ],
-        onChanged: (value) {
-          if (value != null && value != themeMode) {
-            ref.read(sharedUtilProvider).setThemeMode(value);
-          }
+        onChanged: (value) async {
+          await ref.read(myThemeModeProvider.notifier).set(value);
         },
       ),
     );
@@ -78,7 +77,7 @@ class AboutButton extends ConsumerWidget {
         const AboutDialog(
           applicationIcon: FlutterLogo(),
           applicationVersion: "Version 0.0.1",
-          applicationLegalese: "Lorem ipsum und die heilige Jungfrau Maria",
+          applicationLegalese: "Lorem ipsum",
         ),
       ),
     );

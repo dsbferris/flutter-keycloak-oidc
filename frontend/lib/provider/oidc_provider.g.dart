@@ -49,7 +49,7 @@ final currentUserProvider = AutoDisposeProvider<OidcUser?>.internal(
 );
 
 typedef CurrentUserRef = AutoDisposeProviderRef<OidcUser?>;
-String _$authControllerHash() => r'd6997da8f4dbd144bcdda4051a21126a7ac19465';
+String _$authControllerHash() => r'1bbe2d2388a676acfc99db9995a82c3b8cef8677';
 
 /// See also [AuthController].
 @ProviderFor(AuthController)
