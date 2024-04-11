@@ -1,6 +1,7 @@
 # example
 
 An example of how to use flutter with keycloak as oidc provider.
+Written with riverpod and auto_route. (go router partially done)
 
 ## For linux you need
 
