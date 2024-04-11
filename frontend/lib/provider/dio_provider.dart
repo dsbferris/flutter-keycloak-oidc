@@ -14,8 +14,9 @@ part 'dio_provider.g.dart';
 Dio dioClient(DioClientRef ref) => Dio();
 
 @riverpod
-Dio dioAuthClient(DioAuthClientRef ref) {
-  final accessToken = ref.watch(accessTokenProvider);
+Future<Dio> dioAuthClient(DioAuthClientRef ref) async {
+  final user = await ref.watch(currentUserProvider.future);
+  final accessToken = user?.token.accessToken;
   if (accessToken == null) {
     throw Exception(
         "access token must not be null for an authenticated request!");

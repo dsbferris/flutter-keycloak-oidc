@@ -22,6 +22,7 @@ Future<String> publicApi(PublicApiRef ref) {
 }
 
 @riverpod
-Future<String> protectedApi(ProtectedApiRef ref) {
-  return ApiRepository(ref.watch(dioAuthClientProvider)).getProtected();
+Future<String> protectedApi(ProtectedApiRef ref) async {
+  final dio = await ref.watch(dioAuthClientProvider.future);
+  return await ApiRepository(dio).getProtected();
 }

@@ -88,18 +88,7 @@ OidcPlatformSpecificOptions _options() {
   );
 }
 
-@riverpod
-String? accessToken(AccessTokenRef ref) {
-  return ref
-      .watch(currentUserProvider.select((value) => value?.token.accessToken));
-}
-
-@riverpod
-List<String>? currentUserRoles(CurrentUserRolesRef ref) {
-  return ref.watch(currentUserProvider.select((value) => _getRoles(value)));
-}
-
-List<String>? _getRoles(OidcUser? user) {
+List<String>? getUserRoles(OidcUser? user) {
   // tell me you like golang with telling me
 
   if (user == null) return null;
@@ -119,14 +108,9 @@ List<String>? _getRoles(OidcUser? user) {
 }
 
 @riverpod
-OidcUser? currentUser(CurrentUserRef ref) {
-  // workaround to get rid of that AsyncValue
-  return ref.watch(authControllerProvider.select((value) {
-    if (value.hasError || value.isLoading || !value.hasValue) {
-      return null;
-    }
-    return value.requireValue.currentUser;
-  }));
+Future<OidcUser?> currentUser(CurrentUserRef ref) async {
+  return ref
+      .watch(authControllerProvider.selectAsync((value) => value.currentUser));
 }
 
 // Use [AuthController] only with ref.read(authControllerProvider.notifier).method

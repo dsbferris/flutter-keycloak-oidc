@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:example/screens/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -43,56 +44,64 @@ class LoginScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider);
+    final userAsync = ref.watch(currentUserProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login"),
-      ),
-      body: Center(
-        child: ListView(
-          padding: const EdgeInsets.all(10),
-          children: [
-            ElevatedButton(
-              onPressed: () => resetManager(context, ref),
-              child: const Text("Reset oidc manager (testing)"),
-            ),
-            const Gap(4),
-            Visibility(
-                visible: user == null,
-                child: Column(
-                  children: [
-                    UserLoginForm(shallPop),
-                    FilledButton(
-                      onPressed: () async => await loginPopup(context, ref),
-                      child: const Text("Login Browser Popup"),
-                    ),
-                  ],
-                )),
-            const Gap(4),
-            Visibility(
-              visible: user != null,
-              child: Column(
-                children: [
-                  ElevatedButton(
-                    onPressed: () async => await refreshToken(context, ref),
-                    child: const Text("Refresh Token manually"),
+    return userAsync.when(
+      loading: LoadingScreen.new,
+      error: (error, stackTrace) => Center(child: Text(error.toString())),
+      data: (user) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text("Login"),
+          ),
+          body: Center(
+            child: ListView(
+              padding: const EdgeInsets.all(10),
+              children: [
+                ElevatedButton(
+                  onPressed: () => resetManager(context, ref),
+                  child: const Text("Reset oidc manager (testing)"),
+                ),
+                const Gap(4),
+                Visibility(
+                    visible: user == null,
+                    child: Column(
+                      children: [
+                        UserLoginForm(shallPop),
+                        FilledButton(
+                          onPressed: () async => await loginPopup(context, ref),
+                          child: const Text("Login Browser Popup"),
+                        ),
+                      ],
+                    )),
+                const Gap(4),
+                Visibility(
+                  visible: user != null,
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () async => await refreshToken(context, ref),
+                        child: const Text("Refresh Token manually"),
+                      ),
+                      const Gap(4),
+                      ElevatedButton(
+                        onPressed: () async {
+                          await ref
+                              .read(authControllerProvider.notifier)
+                              .logout();
+                        },
+                        child: const Text("Logout"),
+                      ),
+                    ],
                   ),
-                  const Gap(4),
-                  ElevatedButton(
-                    onPressed: () async {
-                      await ref.read(authControllerProvider.notifier).logout();
-                    },
-                    child: const Text("Logout"),
-                  ),
-                ],
-              ),
+                ),
+                const Divider(),
+                UserInfoTexts(user),
+              ],
             ),
-            const Divider(),
-            UserInfoTexts(user),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -210,8 +219,7 @@ class UserInfoTexts extends ConsumerWidget {
     final userText = user?.userInfo.toString() ?? "no user";
     final accessToken = user?.token.accessToken ?? "no access token";
 
-    final rolesText =
-        ref.watch(currentUserRolesProvider)?.toString() ?? "no roles";
+    final rolesText = getUserRoles(user)?.toString() ?? "no roles";
     return Column(
       children: [
         SelectableText(userText),

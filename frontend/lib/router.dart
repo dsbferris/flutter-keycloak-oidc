@@ -54,12 +54,15 @@ class NeedsAuth implements AutoRouteGuard {
 
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
-    final authenticated = ref.read(currentUserProvider) != null;
+    var user = ref.read(currentUserProvider).valueOrNull;
+
+    final authenticated = user != null;
     if (authenticated) {
       resolver.next();
     } else {
       await resolver.redirect(LoginRoute(shallPop: true));
-      final didLogin = ref.read(currentUserProvider) != null;
+      var user = ref.read(currentUserProvider).valueOrNull;
+      final didLogin = user != null;
       // stop re-pushing any pending routes after current
       resolver.resolveNext(didLogin, reevaluateNext: false);
     }
