@@ -89,6 +89,7 @@ GoRouter goRouter(GoRouterRef ref) {
       name: "login",
       builder: (context, state) => const LoginScreen(shallPop: false),
       redirect: (context, state) {
+        // TODO FIX
         final authenticated = ref.read(currentUserProvider) != null;
         if (authenticated) {
           final originalUri =
