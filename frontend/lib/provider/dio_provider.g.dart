@@ -20,11 +20,11 @@ final dioClientProvider = AutoDisposeProvider<Dio>.internal(
 );
 
 typedef DioClientRef = AutoDisposeProviderRef<Dio>;
-String _$dioAuthClientHash() => r'57279897f6bc1c5c8c4a4dcb4f0ae5e8d7ff21c6';
+String _$dioAuthClientHash() => r'280a1e8867b46296fd57f6cbf53e7e1bec114dcc';
 
 /// See also [dioAuthClient].
 @ProviderFor(dioAuthClient)
-final dioAuthClientProvider = AutoDisposeFutureProvider<Dio>.internal(
+final dioAuthClientProvider = AutoDisposeProvider<Dio>.internal(
   dioAuthClient,
   name: r'dioAuthClientProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -34,6 +34,6 @@ final dioAuthClientProvider = AutoDisposeFutureProvider<Dio>.internal(
   allTransitiveDependencies: null,
 );
 
-typedef DioAuthClientRef = AutoDisposeFutureProviderRef<Dio>;
+typedef DioAuthClientRef = AutoDisposeProviderRef<Dio>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

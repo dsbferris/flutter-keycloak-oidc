@@ -121,7 +121,7 @@ final publicApiProvider = AutoDisposeFutureProvider<String>.internal(
 );
 
 typedef PublicApiRef = AutoDisposeFutureProviderRef<String>;
-String _$protectedApiHash() => r'ed6f25bada0c28983f2f1380694c3a9d3a10f253';
+String _$protectedApiHash() => r'023702a28db7dacf2326ac8d02906a79e54cb88f';
 
 /// See also [protectedApi].
 @ProviderFor(protectedApi)

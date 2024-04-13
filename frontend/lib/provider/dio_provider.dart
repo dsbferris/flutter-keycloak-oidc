@@ -1,8 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'package:example/logger.dart';
 import 'package:example/provider/oidc_provider.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:example/logger.dart';
 
 part 'dio_provider.g.dart';
 
@@ -14,8 +13,8 @@ part 'dio_provider.g.dart';
 Dio dioClient(DioClientRef ref) => Dio();
 
 @riverpod
-Future<Dio> dioAuthClient(DioAuthClientRef ref) async {
-  final user = await ref.watch(currentUserProvider.future);
+Dio dioAuthClient(DioAuthClientRef ref) {
+  final user = ref.watch(userProvider);
   final accessToken = user?.token.accessToken;
   if (accessToken == null) {
     throw Exception(

@@ -1,6 +1,7 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:example/provider/dio_provider.dart';
-import 'package:example/provider/shared_util_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:flutter/foundation.dart';
@@ -64,12 +65,11 @@ Future<OidcUserManager> getOidcInstance(SharedPreferences preferences) async {
       ),
     ),
     settings: OidcUserManagerSettings(
-        redirectUri: redirectUri,
-        postLogoutRedirectUri: postLogoutRedirectUri,
-        frontChannelLogoutUri: frontChannelLogoutUri,
-        options: _options(),
-        strictJwtVerification: true),
-    //keyStore: JsonWebKeyStore(),
+      redirectUri: redirectUri,
+      postLogoutRedirectUri: postLogoutRedirectUri,
+      frontChannelLogoutUri: frontChannelLogoutUri,
+      strictJwtVerification: true,
+    ),
   );
 
   logger.t("running oidc init");
@@ -77,79 +77,67 @@ Future<OidcUserManager> getOidcInstance(SharedPreferences preferences) async {
   return manager;
 }
 
-OidcPlatformSpecificOptions _options() {
-  return const OidcPlatformSpecificOptions(
-    ios: OidcPlatformSpecificOptions_AppAuth_IosMacos(
-      preferEphemeralSession: true,
-    ),
-    macos: OidcPlatformSpecificOptions_AppAuth_IosMacos(
-      preferEphemeralSession: true,
-    ),
-  );
-}
-
-List<String>? getUserRoles(OidcUser? user) {
-  // tell me you like golang with telling me
-
-  if (user == null) return null;
-
-  final accessToken = user.token.accessToken;
-  if (accessToken == null) return null;
-
-  var jwt = JsonWebToken.unverified(accessToken);
-
-  final realmAccess = jwt.claims.getTyped<Map<String, dynamic>>("realm_access");
-  if (realmAccess == null) return null;
-
-  final rolesDyn = realmAccess["roles"] as List<dynamic>?;
-  if (rolesDyn == null) return null;
-
-  return List<String>.from(rolesDyn);
+@riverpod
+OidcUserManager userManager(UserManagerRef ref) {
+  throw UnimplementedError();
 }
 
 @riverpod
-Future<OidcUser?> currentUser(CurrentUserRef ref) async {
-  return ref
-      .watch(authControllerProvider.selectAsync((value) => value.currentUser));
+OidcUser? user(UserRef ref) {
+  return ref.watch(userManagerProvider.select((value) => value.currentUser));
 }
 
-// Use [AuthController] only with ref.read(authControllerProvider.notifier).method
-// To get current user etc. use the above!
+@riverpod
+bool isUserLoggedIn(IsUserLoggedInRef ref) {
+  return ref.watch(userProvider) != null;
+}
 
-@Riverpod(keepAlive: true)
-class AuthController extends _$AuthController {
-  @override
-  FutureOr<OidcUserManager> build() async {
-    final manager = await getOidcInstance(ref.watch(sharedPreferencesProvider));
-    manager.userChanges().listen((user) {
-      // update currentUser
-      logger.t("user changed");
-      logger.t(user?.userInfo);
-      ref.notifyListeners();
-    });
-    return manager;
+extension MyUserWithRoles on OidcUser {
+  List<String>? get roles {
+    if (token.accessToken == null) return null;
+    var jwt = JsonWebToken.unverified(token.accessToken!);
+    final realmAccess =
+        jwt.claims.getTyped<Map<String, dynamic>>("realm_access");
+    if (realmAccess == null) return null;
+
+    final rolesDyn = realmAccess["roles"] as List<dynamic>?;
+    if (rolesDyn == null) return null;
+    return List<String>.from(rolesDyn);
   }
+}
+
+extension IsLoggedInUser on OidcUser? {
+  bool get isLoggedIn => this != null;
+}
+
+class MyManager {
+  final WidgetRef ref;
+
+  MyManager(this.ref);
 
   @Deprecated(
       "This is unsecure. Use loginPopup with the secure AuthorizationCodeFlow")
-  Future<OidcUser?> loginForm(String username, String password) async {
-    final manager = state.requireValue;
+  Future<OidcUser?> loginForm(
+      {required String username, required String password}) async {
+    final manager = ref.read(userManagerProvider);
     if (username.isEmpty || password.isEmpty) {
       return null;
     }
-    final user =
-        await manager.loginPassword(username: username, password: password);
+    final user = await manager
+        .loginPassword(username: username, password: password)
+        .catchError((err) {
+      logger.e(err);
+      return null;
+    });
     return user;
   }
 
-  Future<OidcUser?> loginPopup(Uri? originalUri) async {
-    final manager = state.requireValue;
-    final user = await manager.loginAuthorizationCodeFlow(
-      originalUri: originalUri ?? Uri.parse('/'),
-      //store any arbitrary data, here we store the authorization start time.
-      extraStateData: DateTime.now().toIso8601String(),
-      options: _options(),
-    );
+  Future<OidcUser?> loginPopup() async {
+    final manager = ref.read(userManagerProvider);
+    final user = await manager.loginAuthorizationCodeFlow().catchError((err) {
+      logger.e(err);
+      return null;
+    });
     logger.i("user login successful");
     return user;
   }
@@ -161,39 +149,51 @@ class AuthController extends _$AuthController {
     return logoutSilent();
   }
 
-  Future<void> logoutPopup() async {
-    final manager = state.requireValue;
-    await manager.logout(originalUri: Uri.parse('/'), options: _options());
+  Future<void> logoutPopup({Uri? originalUri}) async {
+    final manager = ref.read(userManagerProvider);
+    await manager.logout().catchError((err) {
+      logger.e(err);
+      return null;
+    });
     // ref.invalidate(currentUserProvider);
     logger.i("logged out user");
   }
 
   Future<void> logoutSilent() async {
-    final manager = state.requireValue;
+    final manager = ref.read(userManagerProvider);
     final endpoint = manager.discoveryDocument.endSessionEndpoint.toString();
     final logoutUri = Uri.parse(endpoint).replace(queryParameters: {
       "id_token_hint": manager.currentUser!.idToken,
     });
     final dio = ref.read(dioClientProvider);
     // keycloak returns a html doc
-    final dioResp = await dio.getUri<String>(logoutUri);
+
+    final dioResp = await dio.getUri<String>(logoutUri).catchError((err) {
+      logger.e(err);
+      return Response<String>(requestOptions: RequestOptions(), data: "");
+    });
     final body = dioResp.data ?? "";
     if (!body.contains("You are logged out")) {
-      throw Exception("logout did not work...");
+      logger.e("logout did not work...");
+      return;
+    } else {
+      logger.i("sent logout to keycloak");
+      await forgetUser();
     }
-    logger.i("sent logout to keycloak");
-    await forgetUser();
   }
 
   Future<void> forgetUser() async {
-    final manager = state.requireValue;
+    final manager = ref.read(userManagerProvider);
     await manager.forgetUser();
     logger.i("forgot user");
   }
 
   Future<OidcUser?> refreshToken() async {
-    final manager = state.requireValue;
-    final user = await manager.refreshToken();
+    final manager = ref.read(userManagerProvider);
+    final user = await manager.refreshToken().catchError((err) {
+      logger.e(err);
+      return null;
+    });
     logger.i("refreshed token");
     return user;
   }

@@ -57,6 +57,7 @@ dependencies:
 
   retrofit: ^4.1.0
   json_annotation: ^4.8.1
+  loader_overlay: ^4.0.0
 
 
 

@@ -24,7 +24,7 @@ abstract class _$AppRouter extends RootStackRouter {
     LoginRoute.name: (routeData) {
       final args = routeData.argsAs<LoginRouteArgs>(
           orElse: () => const LoginRouteArgs());
-      return AutoRoutePage<dynamic>(
+      return AutoRoutePage<bool>(
         routeData: routeData,
         child: LoginScreen(
           shallPop: args.shallPop,
